@@ -33,6 +33,7 @@ All exceptions thrown by wrapped methods in a background thread are caught, and 
 * Reconsider the API in the Threadlike abstract class
 * Add more helper methods to Threadlike to make it easier to extend for real use
 * Document everything
+* support logging without affecting performance
 * Measure performance improvements using async vs. BgThread instances (not a "fair" benchmark, but a practical comparison for migration)
 * Determine necessary type flavors for Dart's reference reassignment to avoid copying data from child to parent (how to measure this?)
 * Consider wrapping or extending StreamBuilder to simplify the case for caching last results
