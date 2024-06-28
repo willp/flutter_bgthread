@@ -12,7 +12,7 @@ Currently this is not production ready.  I'm still working out its API, testing 
 Don't use this in production yet.  I'll update this README when I think it's good enough for me, but as always: be careful with introducing dependencies into your code.
 
 # Original Inspiration: agents by G. Clarke
-I was inspired by the Agents package, https://github.com/gaaclarke/agents by G. Clarke.  I've followed a nearly identical method for wrapping closures to communicate from parent to child thread, but I did *not* follow the Actor model at all.  Instead, this package follows a simpler OOP model where a single instance of a class is wrapped by the background thread (aka Isolate).
+I was inspired by the Agents package, https://github.com/gaaclarke/agents by G. Clarke.  I've followed a nearly identical method for wrapping closures to communicate from parent to child thread, but I did *not* follow the Actor model at all.  Instead, this package follows a OOP model where a single instance of a class is wrapped by the background thread (aka Isolate).
 
 # Interesting features
 ## Separate Memory Means Separate Memory
