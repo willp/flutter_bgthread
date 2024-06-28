@@ -26,4 +26,18 @@ All exceptions thrown by wrapped methods in a background thread are caught, and 
 * Be efficient and take the shortest path for data flows
 * Give myself a fun problem to solve!  :-)
 
+# To Do List
+* Add example program
+* Expand test suite to explore more edge-cases
+* Attempt to track memory references in profiler mode to ensure no memory/reference leaks under all conditions (normal and exceptional)
+* Reconsider the API in the Threadlike abstract class
+* Add more helper methods to Threadlike to make it easier to extend for real use
+* Document everything
+* Measure performance improvements using async vs. BgThread instances (not a "fair" benchmark, but a practical comparison for migration)
+* Determine necessary type flavors for Dart's reference reassignment to avoid copying data from child to parent (how to measure this?)
+* Consider wrapping or extending StreamBuilder to simplify the case for caching last results
+* Think about how to use it without statics in the target class.
+* Probably a bunch more after I get more experience with using this code in my first app. :-)
+
+  
   
