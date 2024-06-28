@@ -38,6 +38,9 @@ All exceptions thrown by wrapped methods in a background thread are caught, and 
 * Consider wrapping or extending StreamBuilder to simplify the case for caching last results
 * Think about how to use it without statics in the target class.
 * Probably a bunch more after I get more experience with using this code in my first app. :-)
+* Finally... prepare the library to publish to pub.dev
+
+  
 
   
   
