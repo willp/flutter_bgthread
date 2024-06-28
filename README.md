@@ -16,7 +16,8 @@ I was inspired by the Agents package, https://github.com/gaaclarke/agents by G. 
 
 # Interesting features
 ## Separate Memory Means Separate Memory
-Because the background Isolate/thread has its own private memory space for _everything_, it's impossible to accidentally create a data coupling _outside_ of the BgThread API for communicating between parent and child threads.  It's sometimes a little hard to remember that even though the child thread has a _copy_ of everything from the parent, none of its changes _affect_ the parent's memory.  I'm still working out how to best make it more obvious for debugging, since it's perfectly valid code to have a child modifying mutable state that originated from the parent.
+Because the background Isolate/thread has its own private memory space for _everything_, it's impossible to accidentally create a data coupling _outside_ of the BgThread API for communicating between parent and child threads.  It's sometimes a little hard to remember that even though the child thread has a _copy_ of everything from the parent, none of its changes _affect_ the parent's memory.  I'm still working out how to best make it more obvious for debugging, since it's perfectly valid code to have a child thread uselessly modify its copy of mutable state that originated from the parent.
+
 ## Exceptions are Propagated Back to the Parent
 All exceptions thrown by wrapped methods in a background thread are caught, and both the exception object (of any type) and the StackTrace are propagated up from child to parent, where it is effectively *rethrown* by using `Error.throwWithStackTrace(error, stackTrace)` so the error surfaces at the call-site in the parent thread, rather than being reported through a back-channel.  This differs _significantly_ from the agents library and other isolate wrapping libraries.
 
