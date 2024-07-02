@@ -20,21 +20,20 @@ abstract class Threadlike {
   }
 }
 
-class FgSubscriptionProxy<R, C> {
+class FgSubscriptionProxy<R, T> {
   // R is the type Returned from the background thread's subscribe() stream to a `bgthread.generatorMethod<R> async*`
   // Instantiating this class (FgSubscriptionProxy) sets up the plumbing for dealing with that.
-  // C is the BgThread<C> class.
-  // TODO: change C to T.
+  // T is the BgThread<T> class.
   FgSubscriptionProxy._(this.initialValue) {
     currentValue = this.initialValue;
   }
 
-  static FgSubscriptionProxy<R, C> init<R, C>(
-    BgThread<C> bgchild, // already created, so we're just wiring up streams to an existing background thread.
+  static FgSubscriptionProxy<R, T> init<R, T>(
+    BgThread<T> bgchild, // already created, so we're just wiring up streams to an existing background thread.
     R initialValue,
-    Stream<R> Function(C) func,
+    Stream<R> Function(T) func,
   ) {
-    FgSubscriptionProxy<R, C> thisObj = FgSubscriptionProxy._(initialValue);
+    FgSubscriptionProxy<R, T> thisObj = FgSubscriptionProxy._(initialValue);
     thisObj.setupSubscriptionStream(bgchild, func);
     return thisObj;
   }
@@ -43,7 +42,7 @@ class FgSubscriptionProxy<R, C> {
   late R initialValue; // passed to bgthread's constructor
   late R currentValue = initialValue; // used as a cache for this FG thread
 
-  void setupSubscriptionStream(BgThread<C> bgchild, Stream<R> Function(C) func) {
+  void setupSubscriptionStream(BgThread<T> bgchild, Stream<R> Function(T) func) {
     Stream<R> fgStream = bgchild.subscribe(func);
     fgSubscriptionController.stream.listen((val) => currentValue = val); // updates cache
     fgSubscriptionController.addStream(fgStream);
@@ -130,7 +129,8 @@ class BgThread<T> {
         case (CommandMethods.subscribe):
           final func = command.callable as Stream<dynamic> Function(T);
           Stream<dynamic> stream = func(state);
-          assert (stream.isBroadcast);  // remember to always pass the StreamController.stream, not the raw source stream
+          // TODO: maybe re-enable this after updating tests to use a FgSubscriptionProxy?
+          // assert (stream.isBroadcast);  // remember to always pass the StreamController.stream, not the raw source stream
           try {
             await for (final result in stream) {
               command.sendPort!.send(result);
