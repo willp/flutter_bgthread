@@ -21,8 +21,10 @@ abstract class Threadlike {
 }
 
 class FgSubscriptionProxy<R, C> {
-  // T is the type returned from the background thread's subscribe() stream to a `bgthread.generatorMethod<T> async*`
+  // R is the type Returned from the background thread's subscribe() stream to a `bgthread.generatorMethod<R> async*`
   // Instantiating this class (FgSubscriptionProxy) sets up the plumbing for dealing with that.
+  // C is the BgThread<C> class.
+  // TODO: change C to T.
   FgSubscriptionProxy._(this.initialValue) {
     currentValue = this.initialValue;
   }
