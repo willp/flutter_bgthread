@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:isolate';
 
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 
 abstract class Threadlike {
   int? instanceId;
@@ -18,6 +19,45 @@ abstract class Threadlike {
     exitNow();
   }
 }
+
+class FgSubscriptionProxy<R,C> {
+  // T is the type returned from the background thread's subscribe() stream to a `bgthread.generatorMethod<T> async*`
+  // Instantiating this class (FgSubscriptionProxy) sets up the plumbing for dealing with that.
+  FgSubscriptionProxy._(this.initialValue) {
+    currentValue = this.initialValue;
+  }
+
+  static Future<FgSubscriptionProxy<R,C>> init<R,C>(
+      R initialValue,
+      BgThread<C> bgchild, // already created, so we're just wiring up streams to an existing background thread.
+      Stream<R> Function(C) func,
+    ) async {
+    FgSubscriptionProxy<R,C> thisObj = FgSubscriptionProxy._(initialValue);
+    await thisObj.setupSubscriptionStream(bgchild, func);
+    return thisObj;
+  }
+
+  StreamController<R> fgSubscriptionController = StreamController<R>.broadcast();
+  late R initialValue; // passed to bgthread's constructor
+  late R currentValue = initialValue;  // used as a cache for this FG thread
+
+  Future<void> setupSubscriptionStream(
+    BgThread<C> bgchild,
+    Stream<R> Function(C) func
+  ) async {
+    Stream<R> fgStream = bgchild.subscribe(func); //
+    fgSubscriptionController.stream.listen((val) => currentValue = val); // updates cache
+    fgSubscriptionController.addStream(fgStream);
+  }
+
+  //  need to pass in a closure to create a widget, receiving args too.  AnimatedEmojiData face, double size
+  StreamBuilder<R> fgStreamBuilder(Widget Function<R> (BuildContext context, AsyncSnapshot<R> snapshot) builderFunc) =>
+    StreamBuilder<R>(
+        stream: fgSubscriptionController.stream,
+        initialData: currentValue,
+        builder: builderFunc);
+}
+
 
 class Command {
   final CommandMethods method;
