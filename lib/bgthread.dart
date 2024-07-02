@@ -50,7 +50,7 @@ class FgSubscriptionProxy<R, C> {
   }
 
   //  need to pass in a closure to create a widget, receiving args too.  AnimatedEmojiData face, double size
-  StreamBuilder<R> fgStreamBuilder(Widget Function(BuildContext context, AsyncSnapshot<R> snapshot) builderFunc) =>
+  StreamBuilder<R> fgProxyStreamBuilder(Widget Function(BuildContext context, AsyncSnapshot<R> snapshot) builderFunc) =>
       StreamBuilder<R>(stream: fgSubscriptionController.stream, initialData: currentValue, builder: builderFunc);
 }
 
