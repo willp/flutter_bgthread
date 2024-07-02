@@ -129,7 +129,7 @@ class BgThread<T> {
         case (CommandMethods.subscribe):
           final func = command.callable as Stream<dynamic> Function(T);
           Stream<dynamic> stream = func(state);
-          // TODO: maybe re-enable this after updating tests to use a FgSubscriptionProxy?
+          // TODO: maybe re-enable this after updating tests
           // assert (stream.isBroadcast);  // remember to always pass the StreamController.stream, not the raw source stream
           try {
             await for (final result in stream) {
