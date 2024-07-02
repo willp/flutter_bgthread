@@ -29,13 +29,13 @@ class FgSubscriptionProxy<R, C> {
     currentValue = this.initialValue;
   }
 
-  static Future<FgSubscriptionProxy<R, C>> init<R, C>(
-    R initialValue,
+  static FgSubscriptionProxy<R, C> init<R, C>(
     BgThread<C> bgchild, // already created, so we're just wiring up streams to an existing background thread.
+    R initialValue,
     Stream<R> Function(C) func,
-  ) async {
+  ) {
     FgSubscriptionProxy<R, C> thisObj = FgSubscriptionProxy._(initialValue);
-    await thisObj.setupSubscriptionStream(bgchild, func);
+    thisObj.setupSubscriptionStream(bgchild, func);
     return thisObj;
   }
 
@@ -43,7 +43,7 @@ class FgSubscriptionProxy<R, C> {
   late R initialValue; // passed to bgthread's constructor
   late R currentValue = initialValue; // used as a cache for this FG thread
 
-  Future<void> setupSubscriptionStream(BgThread<C> bgchild, Stream<R> Function(C) func) async {
+  void setupSubscriptionStream(BgThread<C> bgchild, Stream<R> Function(C) func) {
     Stream<R> fgStream = bgchild.subscribe(func);
     fgSubscriptionController.stream.listen((val) => currentValue = val); // updates cache
     fgSubscriptionController.addStream(fgStream);
