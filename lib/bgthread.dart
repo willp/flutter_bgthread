@@ -94,6 +94,7 @@ class BgThread<T> {
     receivePort.listen((_command) async {
       Command command = _command; // cast
       switch (command.method) {
+        // 
         // CREATE
         case (CommandMethods.create):
           try {
@@ -111,6 +112,7 @@ class BgThread<T> {
           }
           // parentPort.send(null); // why?
           break;
+        // 
         // INVOKE
         case (CommandMethods.invoke):
           Object? result;
@@ -125,6 +127,7 @@ class BgThread<T> {
             command.sendPort!.send(ErrorHolder(e, stackTrace));
           }
           break;
+        //
         // SUBSCRIBE
         case (CommandMethods.subscribe):
           final func = command.callable as Stream<dynamic> Function(T);
@@ -251,15 +254,15 @@ class BgThread<T> {
     }
   }
 
-  /// Request background isolate to execute R func(S)
+  /// Request background isolate to exit
   Future<void> exit() async {
-    print("Calling EXIT");
+    // print("Calling EXIT");
     _ensureIsolateIsActive();
     ReceivePort receivePort = ReceivePort();
     _commandPort.send(
         Command(CommandMethods.exit, sendPort: receivePort.sendPort));
     var lastitem = await receivePort.first;
-    print ("Got last response of: $lastitem");
+    // print ("Got last response of: $lastitem");
     assert (lastitem == CommandMethods.exit);
   }
 
