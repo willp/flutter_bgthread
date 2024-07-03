@@ -9,11 +9,17 @@ abstract class Threadlike {
   bool done = false;
 
   /// override to add extra behavior for cleanup
+  /// be sure to call super() so that it can set done=true
   Future<void> finishWork() async {
     done = true;
   }
+
+  /// override to perform final cleanup
+  /// or don't override: the default implementation is a noop
   void exitNow() async => {};
 
+  /// call this to set the done flag, and invoke any cleanup handler code
+  /// in an overriden exitNow() method
   void finishAndExit() async {
     await finishWork();
     exitNow();
