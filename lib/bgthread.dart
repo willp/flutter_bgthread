@@ -113,7 +113,6 @@ class BgThread<T> {
           } catch (e, stackTrace) {
             var error = ErrorHolder(e, stackTrace);
             command.sendPort!.send(error);
-            print("---> exitting isolate now...");
             Isolate.exit(command.sendPort, error);
           }
           // parentPort.send(null); // why?
@@ -188,12 +187,14 @@ class BgThread<T> {
     );
     final sendPort = await commandPort.first;
     ReceivePort creationFailed = ReceivePort();
-    RootIsolateToken rootIsolateToken = RootIsolateToken.instance!;
+    RootIsolateToken? rootIsolateToken = RootIsolateToken.instance;
+
     sendPort.send(Command(
       CommandMethods.create,
       sendPort: creationFailed.sendPort,
       callable: func,
-      token: rootIsolateToken)
+      token: rootIsolateToken,  // is null when create child threads of child threads
+      )
     );
     commandPort.close(); // not sure why we do this... ?
     final error = await creationFailed.first;  // null on success
