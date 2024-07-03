@@ -145,9 +145,12 @@ class BgThread<T> {
           break;
         // EXIT
         case (CommandMethods.exit):
-          state.finishAndExit();
-          receivePort.close();
-          Isolate.exit(command.sendPort!, CommandMethods.exit);
+          try {
+            state.finishAndExit();
+            receivePort.close();
+          } finally {
+            Isolate.exit(command.sendPort!, CommandMethods.exit);
+          }
           // ignore: dead_code
           break;
       };
