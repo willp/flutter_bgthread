@@ -27,7 +27,7 @@ abstract class Threadlike {
   }
 }
 
-class FgSubscriptionProxy<R, T> {
+class FgSubscriptionProxy<T, R> {
   // R is the type Returned from the background thread's subscribe() stream to a `bgthread.generatorMethod<R> async*`
   // Instantiating this class (FgSubscriptionProxy) sets up the plumbing for dealing with that.
   // T is the BgThread<T> class.
@@ -35,12 +35,12 @@ class FgSubscriptionProxy<R, T> {
     currentValue = this.initialValue;
   }
 
-  static FgSubscriptionProxy<R, T> init<R, T>(
+  static FgSubscriptionProxy<T, R> init<T, R>(
     BgThread<T> bgchild, // already created, so we're just wiring up streams to an existing background thread.
     R initialValue,
     Stream<R> Function(T) func,
   ) {
-    FgSubscriptionProxy<R, T> thisObj = FgSubscriptionProxy._(initialValue);
+    FgSubscriptionProxy<T, R> thisObj = FgSubscriptionProxy._(initialValue);
     thisObj.setupSubscriptionStream(bgchild, func);
     return thisObj;
   }
