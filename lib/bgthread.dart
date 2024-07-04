@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:isolate';
+import 'dart:ui';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -64,7 +65,7 @@ class Command {
   final CommandMethods method;
   final SendPort? sendPort;
   final Object? callable;
-  final Object? token;
+  final RootIsolateToken? token;
 
   Command(this.method, {this.sendPort, this.callable, this.token});
 }
@@ -91,6 +92,8 @@ class BgThread<T> {
   final SendPort _commandPort;
   static int instanceID = 0;
 
+  static RootIsolateToken? rootToken;
+
   BgThread._(this._isolate, this._commandPort);
 
   static void _dispatcherInChild<T extends Threadlike>(SendPort parentPort) async {
@@ -104,8 +107,10 @@ class BgThread<T> {
         // CREATE
         case (CommandMethods.create):
           try {
-            if (command.token is RootIsolateToken) {
-              RootIsolateToken rootIsolateToken = command.token as RootIsolateToken;
+            if (command.token != null) {  // always non-null
+              // print('child setting new static TOKEN from command parameter.  static is currently: ${BgThread.rootToken}');
+              BgThread.rootToken = command.token;
+              RootIsolateToken rootIsolateToken = command.token!;  // always non-null
               BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
             }
             state = (command.callable! as T Function())();
@@ -169,6 +174,17 @@ class BgThread<T> {
     ReceivePort commandPort = ReceivePort();
     ReceivePort errorPort = ReceivePort();
     ReceivePort exitPort = ReceivePort();
+    //
+    // BEFORE creating Isolate, store a static copy of the rootIsolateToken in BgThread's static
+    RootIsolateToken? rootIsolateToken = RootIsolateToken.instance;
+    if (rootIsolateToken != null) {
+      // set in static before spawn() so child gets a copy for any create() calls making grand-child Isolates
+      BgThread.rootToken = rootIsolateToken;
+    } else {
+      // this happens only in a child BgThread of a child BgThread, since RootIsolateToken.instance is null in that case
+      rootIsolateToken = BgThread.rootToken;
+    }
+    //
     Isolate isolate = await Isolate.spawn(
       _dispatcherInChild<T>,
       commandPort.sendPort,
@@ -187,7 +203,6 @@ class BgThread<T> {
     );
     final sendPort = await commandPort.first;
     ReceivePort creationFailed = ReceivePort();
-    RootIsolateToken? rootIsolateToken = RootIsolateToken.instance;
 
     sendPort.send(Command(
       CommandMethods.create,
