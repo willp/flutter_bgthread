@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:isolate';
-import 'dart:ui';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+
+import 'bg_types.dart';
 
 abstract class Threadlike {
   int? instanceId;
@@ -27,10 +28,26 @@ abstract class Threadlike {
   }
 }
 
+class MapStreamBuildersByType<T, V extends ProxiedStreamBuilder<T>> {
+  final data = <T, V>{};
+
+  void operator []=(T key, V val) => data[key] = val;
+
+  V? operator [](T key) => data[key];
+
+  Iterable<T> keys() => data.keys;
+}
+
+typedef StreamBuilderMapper = MapStreamBuildersByType;
+
 class FgSubscriptionProxy<T, R> {
   // R is the type Returned from the background thread's subscribe() stream to a `bgthread.generatorMethod<R> async*`
   // Instantiating this class (FgSubscriptionProxy) sets up the plumbing for dealing with that.
   // T is the BgThread<T> class.
+  late R initialValue; // passed to bgthread's constructor
+  late R currentValue = initialValue; // used as a cache for this FG thread
+  StreamController<R> fgSubscriptionController = StreamController<R>.broadcast();
+
   FgSubscriptionProxy._(this.initialValue) {
     currentValue = this.initialValue;
   }
@@ -38,16 +55,15 @@ class FgSubscriptionProxy<T, R> {
   static FgSubscriptionProxy<T, R> init<T, R>(
     BgThread<T> bgchild, // already created, so we're just wiring up streams to an existing background thread.
     R initialValue,
+    MapStreamBuildersByType builderHolder,
     Stream<R> Function(T) func,
   ) {
     FgSubscriptionProxy<T, R> thisObj = FgSubscriptionProxy._(initialValue);
     thisObj.setupSubscriptionStream(bgchild, func);
+    builderHolder[R] = thisObj.fgProxyStreamBuilder;
     return thisObj;
   }
 
-  StreamController<R> fgSubscriptionController = StreamController<R>.broadcast();
-  late R initialValue; // passed to bgthread's constructor
-  late R currentValue = initialValue; // used as a cache for this FG thread
 
   void setupSubscriptionStream(BgThread<T> bgchild, Stream<R> Function(T) func) {
     Stream<R> fgStream = bgchild.subscribe(func);
